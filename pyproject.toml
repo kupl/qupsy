@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qupsy"
+authors = [
+    { name = "Hayeong Lee", email = "hy.gloria.lee@gmail.com" },
+    { name = "Seokhyun Lee", email = "gbvrcx@gmail.com" },
+]
+description = "TODO"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
+dynamic = ["version"]
+dependencies = [
+    "rich>=13"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23",
+    "isort>=5"
+]
+test = [
+    "pytest>=7",
+    "pytest-cov>=5",
+    "pytest-timeout>=2",
+]
+type = [
+    "pyright>=1.1"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kupl/qupsy"
+"Bug Tracker" = "https://github.com/kupl/qupsy/issues"
+
+[tool.hatch.version]
+path = "qupsy/__init__.py"
+
+[project.scripts]
+qupsy = "qupsy.bin:main"
+
+[tool.isort]
+profile = "black"
+known_first_party = ["qupsy"]
+
+[tool.pyright]
+include = ["qupsy", "tests"]
+strict = ["qupsy", "tests"]
