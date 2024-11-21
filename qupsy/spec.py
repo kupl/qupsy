@@ -29,9 +29,13 @@ class Spec:
             input_str = str(input).splitlines()
             input_str = input_str[0] + " ...]" if len(input_str) > 1 else input_str[0]
             output_str = str(output).splitlines()
-            output_str = output_str[0] + " ...]" if len(output_str) > 1 else output_str[0]
+            output_str = (
+                output_str[0] + " ...]" if len(output_str) > 1 else output_str[0]
+            )
 
-            testcases_string.append(f"        ( Input: {input_str},\n         Output: {output_str}),")
+            testcases_string.append(
+                f"        ( Input: {input_str},\n         Output: {output_str}),"
+            )
         return f"""Spec(
     gates: [{", ".join(map(lambda g: g.__name__, self.gates))}],
     testcases: [
@@ -50,7 +54,11 @@ def parse_spec(spec: Path | str) -> Spec:
     testcases: list[tuple[npt.ArrayLike, npt.ArrayLike]] = []
     for tc in data["testcases"].values():
         output = np.fromstring(tc["output"], dtype="complex", sep=",")
-        input = tc["input"] if "input" in tc else (np.concat([[1], np.zeros_like(output[1:])]))
+        input = (
+            tc["input"]
+            if "input" in tc
+            else (np.concat([[1], np.zeros_like(output[1:])]))
+        )
         testcases.append((input, output))
 
         logger.debug("Parsed output: %s", output)
