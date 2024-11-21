@@ -216,7 +216,9 @@ class Ry(Gate):
     p: Aexp
     q: Aexp
 
-    def __init__(self, qreg: Aexp | None = None, p: Aexp | None = None, q: Aexp | None = None) -> None:
+    def __init__(
+        self, qreg: Aexp | None = None, p: Aexp | None = None, q: Aexp | None = None
+    ) -> None:
         self.qreg = qreg or HoleAexp()
         self.p = p or HoleAexp()
         self.q = q or HoleAexp()
@@ -265,7 +267,13 @@ class CRy(Gate):
     p: Aexp
     q: Aexp
 
-    def __init__(self, qreg1: Aexp | None = None, qreg2: Aexp | None = None, p: Aexp | None = None, q: Aexp | None = None) -> None:
+    def __init__(
+        self,
+        qreg1: Aexp | None = None,
+        qreg2: Aexp | None = None,
+        p: Aexp | None = None,
+        q: Aexp | None = None,
+    ) -> None:
         self.qreg1 = qreg1 or HoleAexp()
         self.qreg2 = qreg2 or HoleAexp()
         self.p = p or HoleAexp()
@@ -352,7 +360,13 @@ class ForCmd(Cmd):
     end: Aexp
     body: Cmd
 
-    def __init__(self, var: str, start: Aexp | None = None, end: Aexp | None = None, body: Cmd | None = None) -> None:
+    def __init__(
+        self,
+        var: str,
+        start: Aexp | None = None,
+        end: Aexp | None = None,
+        body: Cmd | None = None,
+    ) -> None:
         self.var = var
         self.start = start or HoleAexp()
         self.end = end or HoleAexp()
