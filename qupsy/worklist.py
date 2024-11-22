@@ -8,11 +8,11 @@ class Worklist:
         self.current_set: PriorityQueue[tuple[int, int, Pgm]] = PriorityQueue()
         self.overall_set: list[Pgm] = []
 
-    def put(self, enqueue: list[Pgm]) -> None:
-        for element in enqueue:
-            if element not in self.overall_set:
-                self.current_set.put((element.cost, element.depth, element))
-                self.overall_set.append(element)
+    def put(self, *pgms: Pgm) -> None:
+        for pgm in pgms:
+            if pgm not in self.overall_set:
+                self.current_set.put((pgm.cost, pgm.depth, pgm))
+                self.overall_set.append(pgm)
 
     def get(self) -> Pgm:
         return self.current_set.get_nowait()[2]
@@ -25,3 +25,6 @@ class Worklist:
 
     def notEmpty(self) -> bool:
         return not self.current_set.empty()
+
+    def num_pgm_left(self) -> int:
+        return self.current_set.qsize()
