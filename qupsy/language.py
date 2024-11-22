@@ -427,3 +427,10 @@ class Pgm:
     @property
     def depth(self) -> int:
         return self.body.depth
+
+
+GATE_MAP: dict[str, type[Gate]] = {
+    g.__name__: g
+    for g in globals().values()
+    if isinstance(g, type) and issubclass(g, Gate)
+}

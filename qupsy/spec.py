@@ -6,16 +6,8 @@ from typing import cast
 import numpy as np
 import numpy.typing as npt
 
-from qupsy.language import CX, CRy, Gate, H, Ry, X
+from qupsy.language import GATE_MAP, Gate
 from qupsy.utils import logger
-
-GATE_MAP: dict[str, type[Gate]] = {
-    "H": H,
-    "X": X,
-    "Ry": Ry,
-    "CX": CX,
-    "CRy": CRy,
-}
 
 
 @dataclass
