@@ -2,22 +2,22 @@ from qupsy.language import HoleCmd, Pgm, SeqCmd
 
 
 def test_pgm_create_with_empty_body():
-    pgm = Pgm()
+    pgm = Pgm("n")
     assert isinstance(pgm.body, HoleCmd)
 
 
 def test_pgm_to_str():
-    pgm = Pgm()
+    pgm = Pgm("n")
     assert str(pgm) == str(pgm.body)
 
 
 def test_pgm_cost():
-    pgm = Pgm()
+    pgm = Pgm("n")
     assert pgm.cost == pgm.body.cost
 
 
 def test_pgm_depth():
-    pgm = Pgm()
+    pgm = Pgm("n")
     assert pgm.depth == pgm.body.depth
 
 
