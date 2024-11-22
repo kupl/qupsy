@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from textwrap import indent
 
@@ -419,6 +421,9 @@ class Pgm:
 
     def __repr__(self) -> str:
         return f"Pgm({self.body:!r})"
+
+    def __lt__(self, other: Pgm) -> bool:
+        return self.cost < other.cost
 
     @property
     def cost(self) -> int:
