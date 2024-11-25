@@ -2,12 +2,14 @@ from qupsy.language import (
     ALL_AEXPS,
     ALL_GATES,
     CX,
+    Add,
     Aexp,
     Cmd,
     ForCmd,
     Gate,
     GateCmd,
     H,
+    HoleAexp,
     Integer,
     Pgm,
     SeqCmd,
@@ -77,4 +79,19 @@ def test_hole_aexp3():
         assert type(pgm.body.gate.qreg2) in aexp_types
         if type(pgm.body.gate.qreg2) not in [Integer, Var]:
             aexp_types.remove(type(pgm.body.gate.qreg2))
+    assert len(aexp_types) == 3
+
+
+def test_next_aexp():
+    pgm = Pgm("n", GateCmd(CX(Integer(0), Add())))
+    aexp_types: list[type[Aexp]] = ALL_AEXPS.copy()
+    pgms = next(pgm)
+    for pgm in pgms:
+        assert isinstance(pgm.body, GateCmd)
+        assert isinstance(pgm.body.gate, CX)
+        assert isinstance(pgm.body.gate.qreg2, Add)
+        assert type(pgm.body.gate.qreg2.a) in aexp_types
+        if type(pgm.body.gate.qreg2.a) not in [Integer, Var]:
+            aexp_types.remove(type(pgm.body.gate.qreg2.a))
+        assert isinstance(pgm.body.gate.qreg2.b, HoleAexp)
     assert len(aexp_types) == 3

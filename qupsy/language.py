@@ -34,9 +34,9 @@ class Aexp(ABC):
         )
 
     @property
-    def filled(self) -> bool:
+    def terminated(self) -> bool:
         for aexp in self.children:
-            if not aexp.filled:
+            if not aexp.terminated:
                 return False
         return True
 
@@ -104,7 +104,7 @@ class HoleAexp(Aexp):
         return []
 
     @property
-    def filled(self) -> bool:
+    def terminated(self) -> bool:
         return False
 
 
@@ -227,9 +227,9 @@ class Gate(ABC):
         )
 
     @property
-    def filled(self) -> bool:
+    def terminated(self) -> bool:
         for aexp in self.children:
-            if not aexp.filled:
+            if not aexp.terminated:
                 return False
         return True
 
@@ -253,7 +253,7 @@ class HoleGate(Gate):
         return []
 
     @property
-    def filled(self) -> bool:
+    def terminated(self) -> bool:
         return False
 
 
@@ -410,9 +410,9 @@ class Cmd(ABC):
         )
 
     @property
-    def filled(self) -> bool:
+    def terminated(self) -> bool:
         for child in self.children:
-            if not child.filled:
+            if not child.terminated:
                 return False
         return True
 
@@ -436,7 +436,7 @@ class HoleCmd(Cmd):
         return []
 
     @property
-    def filled(self) -> bool:
+    def terminated(self) -> bool:
         return False
 
 

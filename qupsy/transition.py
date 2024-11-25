@@ -36,7 +36,7 @@ class TransitionVisitor:
             return visitor(aexp)
 
         for i, child in enumerate(aexp.children):
-            if child.filled:
+            if child.terminated:
                 continue
             next_children = self.visit_Aexp(child)
             pre_args = aexp.children[:i]
@@ -50,7 +50,7 @@ class TransitionVisitor:
                         *(a.copy() for a in post_args),
                     )
                 )
-
+            return ret
         return []
 
     def visit_HoleGate(self, gate: HoleGate) -> list[Gate]:
@@ -63,7 +63,7 @@ class TransitionVisitor:
             return visitor(gate)
 
         for i, child in enumerate(gate.children):
-            if child.filled:
+            if child.terminated:
                 continue
             next_children = self.visit_Aexp(child)
             pre_args = gate.children[:i]
@@ -84,13 +84,13 @@ class TransitionVisitor:
         return [SeqCmd(), ForCmd(var=f"i{self.for_depth}"), GateCmd()]
 
     def visit_SeqCmd(self, cmd: SeqCmd) -> list[Cmd]:
-        if not cmd.pre.filled:
+        if not cmd.pre.terminated:
             pres = self.visit_Cmd(cmd.pre)
             ret: list[Cmd] = []
             for pre in pres:
                 ret.append(SeqCmd(pre=pre, post=cmd.post.copy()))
             return ret
-        if not cmd.post.filled:
+        if not cmd.post.terminated:
             posts = self.visit_Cmd(cmd.post)
             ret: list[Cmd] = []
             for post in posts:
@@ -99,7 +99,7 @@ class TransitionVisitor:
         return []
 
     def visit_ForCmd(self, cmd: ForCmd) -> list[Cmd]:
-        if not cmd.start.filled:
+        if not cmd.start.terminated:
             starts = self.visit_Aexp(cmd.start)
             ret: list[Cmd] = []
             for start in starts:
@@ -112,7 +112,7 @@ class TransitionVisitor:
                     )
                 )
             return ret
-        if not cmd.end.filled:
+        if not cmd.end.terminated:
             ends = self.visit_Aexp(cmd.end)
             ret: list[Cmd] = []
             for end in ends:
@@ -125,7 +125,7 @@ class TransitionVisitor:
                     )
                 )
             return ret
-        if not cmd.body.filled:
+        if not cmd.body.terminated:
             self.for_depth += 1
             bodies = self.visit_Cmd(cmd.body)
             self.for_depth -= 1
