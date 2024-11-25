@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from textwrap import indent
 
 TAB = "    "
 
 
+@dataclass
 class Aexp(ABC):
 
     @abstractmethod
@@ -44,6 +46,7 @@ class Aexp(ABC):
         return self.__class__(*[child.copy() for child in self.children])
 
 
+@dataclass
 class Integer(Aexp):
     def __init__(self, value: int) -> None:
         self.value = value
@@ -66,6 +69,7 @@ class Integer(Aexp):
         return Integer(self.value)
 
 
+@dataclass
 class Var(Aexp):
     def __init__(self, name: str) -> None:
         self.name = name
@@ -88,6 +92,7 @@ class Var(Aexp):
         return Var(self.name)
 
 
+@dataclass
 class HoleAexp(Aexp):
     def __str__(self) -> str:
         return "□_a"
@@ -108,6 +113,7 @@ class HoleAexp(Aexp):
         return False
 
 
+@dataclass
 class Add(Aexp):
     a: Aexp
     b: Aexp
@@ -120,7 +126,7 @@ class Add(Aexp):
         return f"{self.a} + {self.b}"
 
     def __repr__(self) -> str:
-        return f"Add({self.a!r}, {self.b!r})"
+        return f"Add({repr(self.a)}, {repr(self.b)})"
 
     @property
     def cost(self) -> int:
@@ -131,6 +137,7 @@ class Add(Aexp):
         return [self.a, self.b]
 
 
+@dataclass
 class Sub(Aexp):
     a: Aexp
     b: Aexp
@@ -143,7 +150,7 @@ class Sub(Aexp):
         return f"{self.a} - {self.b}"
 
     def __repr__(self) -> str:
-        return f"Sub({self.a!r}, {self.b!r})"
+        return f"Sub({repr(self.a)}, {repr(self.b)})"
 
     @property
     def cost(self) -> int:
@@ -154,6 +161,7 @@ class Sub(Aexp):
         return [self.a, self.b]
 
 
+@dataclass
 class Mul(Aexp):
     a: Aexp
     b: Aexp
@@ -166,7 +174,7 @@ class Mul(Aexp):
         return f"{self.a} * {self.b}"
 
     def __repr__(self) -> str:
-        return f"Mul({self.a!r}, {self.b!r})"
+        return f"Mul({repr(self.a)}, {repr(self.b)})"
 
     @property
     def cost(self) -> int:
@@ -177,6 +185,7 @@ class Mul(Aexp):
         return [self.a, self.b]
 
 
+@dataclass
 class Div(Aexp):
     a: Aexp
     b: Aexp
@@ -189,7 +198,7 @@ class Div(Aexp):
         return f"{self.a} // {self.b}"
 
     def __repr__(self) -> str:
-        return f"Div({self.a!r}, {self.b!r})"
+        return f"Div({repr(self.a)}, {repr(self.b)})"
 
     @property
     def cost(self) -> int:
@@ -200,6 +209,7 @@ class Div(Aexp):
         return [self.a, self.b]
 
 
+@dataclass
 class Gate(ABC):
     @abstractmethod
     def __str__(self) -> str:
@@ -237,6 +247,7 @@ class Gate(ABC):
         return self.__class__(*[child.copy() for child in self.children])
 
 
+@dataclass
 class HoleGate(Gate):
     def __str__(self) -> str:
         return "□_g"
@@ -257,6 +268,7 @@ class HoleGate(Gate):
         return False
 
 
+@dataclass
 class H(Gate):
     qreg: Aexp
 
@@ -267,7 +279,7 @@ class H(Gate):
         return f"qc.append(cirq.H(qbits[{self.qreg}]))"
 
     def __repr__(self) -> str:
-        return f"H({self.qreg!r})"
+        return f"H({repr(self.qreg)})"
 
     @property
     def cost(self) -> int:
@@ -278,6 +290,7 @@ class H(Gate):
         return [self.qreg]
 
 
+@dataclass
 class X(Gate):
     qreg: Aexp
 
@@ -288,7 +301,7 @@ class X(Gate):
         return f"qc.append(cirq.X(qbits[{self.qreg}]))"
 
     def __repr__(self) -> str:
-        return f"X({self.qreg!r})"
+        return f"X({repr(self.qreg)})"
 
     @property
     def cost(self) -> int:
@@ -299,6 +312,7 @@ class X(Gate):
         return [self.qreg]
 
 
+@dataclass
 class Ry(Gate):
     qreg: Aexp
     p: Aexp
@@ -315,7 +329,7 @@ class Ry(Gate):
         return f"qc.append(cirq.Ry(rads=2*np.arccos(math.sqrt({self.p}/{self.q}))))(qbits[{self.qreg}])"
 
     def __repr__(self) -> str:
-        return f"Ry({self.qreg!r}, {self.p!r}, {self.q!r})"
+        return f"Ry({repr(self.qreg)}, {repr(self.p)}, {repr(self.q)})"
 
     @property
     def cost(self) -> int:
@@ -326,6 +340,7 @@ class Ry(Gate):
         return [self.qreg, self.p, self.q]
 
 
+@dataclass
 class CX(Gate):
     qreg1: Aexp
     qreg2: Aexp
@@ -338,7 +353,7 @@ class CX(Gate):
         return f"qc.append(cirq.CX(qbits[{self.qreg1}], qbits[{self.qreg2}]))"
 
     def __repr__(self) -> str:
-        return f"CX({self.qreg1!r}, {self.qreg2!r})"
+        return f"CX({repr(self.qreg1)}, {repr(self.qreg2)})"
 
     @property
     def cost(self) -> int:
@@ -349,6 +364,7 @@ class CX(Gate):
         return [self.qreg1, self.qreg2]
 
 
+@dataclass
 class CRy(Gate):
     qreg1: Aexp
     qreg2: Aexp
@@ -371,7 +387,7 @@ class CRy(Gate):
         return f"qc.append(cirq.Ry(rads=2*np.arccos(math.sqrt({self.p}/{self.q}))).controlled(num_controls=1)(qbits[{self.qreg1}], qbits[{self.qreg2}])"
 
     def __repr__(self) -> str:
-        return f"CRy({self.qreg1!r}, {self.qreg2!r}, {self.p!r}, {self.q!r})"
+        return f"CRy({repr(self.qreg1)}, {repr(self.qreg2)}, {repr(self.p)}, {repr(self.q)})"
 
     @property
     def cost(self) -> int:
@@ -382,6 +398,7 @@ class CRy(Gate):
         return [self.qreg1, self.qreg2, self.p, self.q]
 
 
+@dataclass
 class Cmd(ABC):
 
     @abstractmethod
@@ -420,6 +437,7 @@ class Cmd(ABC):
         return self.__class__(*[child.copy() for child in self.children])
 
 
+@dataclass
 class HoleCmd(Cmd):
     def __str__(self) -> str:
         return "□_c"
@@ -440,6 +458,7 @@ class HoleCmd(Cmd):
         return False
 
 
+@dataclass
 class SeqCmd(Cmd):
     pre: Cmd
     post: Cmd
@@ -463,6 +482,7 @@ class SeqCmd(Cmd):
         return [self.pre, self.post]
 
 
+@dataclass
 class ForCmd(Cmd):
     var: str
     start: Aexp
@@ -482,10 +502,10 @@ class ForCmd(Cmd):
         self.body = body or HoleCmd()
 
     def __str__(self) -> str:
-        return f"for {self.var} in range({self.start}{self.end}):\n{indent(str(self.body), TAB)}"
+        return f"for {self.var} in range({self.start},{self.end}):\n{indent(str(self.body), TAB)}"
 
     def __repr__(self) -> str:
-        return f"For({self.var!r}, {self.start!r}, {self.end!r}, {self.body!r})"
+        return f"For({repr(self.var)}, {repr(self.start)}, {repr(self.end)}, {repr(self.body)})"
 
     def copy(self) -> ForCmd:
         return ForCmd(self.var, self.start.copy(), self.end.copy(), self.body.copy())
@@ -499,6 +519,7 @@ class ForCmd(Cmd):
         return [self.start, self.end, self.body]
 
 
+@dataclass
 class GateCmd(Cmd):
     gate: Gate
 
@@ -509,7 +530,7 @@ class GateCmd(Cmd):
         return str(self.gate)
 
     def __repr__(self) -> str:
-        return f"{self.gate!r}"
+        return f"{repr(self.gate)}"
 
     @property
     def cost(self) -> int:
@@ -520,6 +541,7 @@ class GateCmd(Cmd):
         return [self.gate]
 
 
+@dataclass
 class Pgm:
     n: str
     body: Cmd
@@ -529,7 +551,10 @@ class Pgm:
         self.body = body or HoleCmd()
 
     def __str__(self) -> str:
-        return str(self.body)
+        qreg = "qbits = cirq.LineQubit.range(n)"
+        circuit = "qc = cirq.Circuit()"
+        ret = "return qc"
+        return f"import cirq, numpy as np\ndef pgm({self.n}):\n{indent(qreg, TAB)}\n{indent(circuit, TAB)}\n{indent(str(self.body), TAB)}\n{indent(ret, TAB)}"
 
     def __repr__(self) -> str:
         return f"Pgm({repr(self.body)})"
