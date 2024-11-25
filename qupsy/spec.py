@@ -37,12 +37,15 @@ class Spec:
             testcases_string.append(
                 f"        ( Input: {input_str},\n         Output: {output_str}),"
             )
-        return f"""Spec(
-    gates: [{", ".join(map(lambda g: g.__name__, self.gates))}],
+        return """Spec(
+    gates: [{}],
     testcases: [
-{"\n".join(testcases_string)}
+{}
     ],
-)"""
+)""".format(
+            ", ".join(map(lambda g: g.__name__, self.gates)),
+            "\n".join(testcases_string),
+        )
 
 
 def make_spec(data: SpecData) -> Spec:
