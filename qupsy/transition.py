@@ -50,7 +50,7 @@ class TransitionVisitor:
                         *(a.copy() for a in post_args),
                     )
                 )
-
+            return ret
         return []
 
     def visit_HoleGate(self, gate: HoleGate) -> list[Gate]:
