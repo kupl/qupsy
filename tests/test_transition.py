@@ -9,6 +9,7 @@ from qupsy.language import (
     Gate,
     GateCmd,
     H,
+    HoleAexp,
     Integer,
     Pgm,
     SeqCmd,
@@ -92,4 +93,5 @@ def test_next_aexp():
         assert type(pgm.body.gate.qreg2.a) in aexp_types
         if type(pgm.body.gate.qreg2.a) not in [Integer, Var]:
             aexp_types.remove(type(pgm.body.gate.qreg2.a))
+        assert isinstance(pgm.body.gate.qreg2.b, HoleAexp)
     assert len(aexp_types) == 3
