@@ -23,8 +23,69 @@ class Aexp(ABC):
 
     @property
     @abstractmethod
-    def depth(self) -> int:
+    def children(self) -> list[Aexp]:
         pass
+
+    @property
+    def depth(self) -> int:
+        children = self.children
+        return 1 + (
+            max([child.depth for child in children]) if len(children) > 0 else 0
+        )
+
+    @property
+    def filled(self) -> bool:
+        for aexp in self.children:
+            if not aexp.filled:
+                return False
+        return True
+
+    def copy(self) -> Aexp:
+        return self.__class__(*[child.copy() for child in self.children])
+
+
+class Integer(Aexp):
+    def __init__(self, value: int) -> None:
+        self.value = value
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        return f"{self.value}"
+
+    @property
+    def cost(self) -> int:
+        return 0
+
+    @property
+    def children(self) -> list[Aexp]:
+        return []
+
+    def copy(self) -> Integer:
+        return Integer(self.value)
+
+
+class Var(Aexp):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"{self.name}"
+
+    @property
+    def cost(self) -> int:
+        return 0
+
+    @property
+    def children(self) -> list[Aexp]:
+        return []
+
+    def copy(self) -> Var:
+        return Var(self.name)
 
 
 class HoleAexp(Aexp):
@@ -39,8 +100,12 @@ class HoleAexp(Aexp):
         return 3
 
     @property
-    def depth(self) -> int:
-        return 1
+    def children(self) -> list[Aexp]:
+        return []
+
+    @property
+    def filled(self) -> bool:
+        return False
 
 
 class Add(Aexp):
@@ -62,8 +127,8 @@ class Add(Aexp):
         return self.a.cost + self.b.cost + 3
 
     @property
-    def depth(self) -> int:
-        return max(self.a.depth, self.b.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.a, self.b]
 
 
 class Sub(Aexp):
@@ -85,8 +150,8 @@ class Sub(Aexp):
         return self.a.cost + self.b.cost + 3
 
     @property
-    def depth(self) -> int:
-        return max(self.a.depth, self.b.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.a, self.b]
 
 
 class Mul(Aexp):
@@ -108,8 +173,8 @@ class Mul(Aexp):
         return self.a.cost + self.b.cost + 3
 
     @property
-    def depth(self) -> int:
-        return max(self.a.depth, self.b.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.a, self.b]
 
 
 class Div(Aexp):
@@ -131,8 +196,8 @@ class Div(Aexp):
         return self.a.cost + self.b.cost + 3
 
     @property
-    def depth(self) -> int:
-        return max(self.a.depth, self.b.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.a, self.b]
 
 
 class Gate(ABC):
@@ -151,8 +216,25 @@ class Gate(ABC):
 
     @property
     @abstractmethod
-    def depth(self) -> int:
+    def children(self) -> list[Aexp]:
         pass
+
+    @property
+    def depth(self) -> int:
+        children = self.children
+        return 1 + (
+            max([child.depth for child in children]) if len(children) > 0 else 0
+        )
+
+    @property
+    def filled(self) -> bool:
+        for aexp in self.children:
+            if not aexp.filled:
+                return False
+        return True
+
+    def copy(self) -> Gate:
+        return self.__class__(*[child.copy() for child in self.children])
 
 
 class HoleGate(Gate):
@@ -167,8 +249,12 @@ class HoleGate(Gate):
         return 3
 
     @property
-    def depth(self) -> int:
-        return 1
+    def children(self) -> list[Aexp]:
+        return []
+
+    @property
+    def filled(self) -> bool:
+        return False
 
 
 class H(Gate):
@@ -188,8 +274,8 @@ class H(Gate):
         return self.qreg.cost + 2
 
     @property
-    def depth(self) -> int:
-        return self.qreg.depth + 1
+    def children(self) -> list[Aexp]:
+        return [self.qreg]
 
 
 class X(Gate):
@@ -209,8 +295,8 @@ class X(Gate):
         return self.qreg.cost + 2
 
     @property
-    def depth(self) -> int:
-        return self.qreg.depth + 1
+    def children(self) -> list[Aexp]:
+        return [self.qreg]
 
 
 class Ry(Gate):
@@ -236,8 +322,8 @@ class Ry(Gate):
         return self.qreg.cost + self.p.cost + self.q.cost + 2
 
     @property
-    def depth(self) -> int:
-        return max(self.qreg.depth, self.p.depth, self.q.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.qreg, self.p, self.q]
 
 
 class CX(Gate):
@@ -259,8 +345,8 @@ class CX(Gate):
         return self.qreg1.cost + self.qreg2.cost + 2
 
     @property
-    def depth(self) -> int:
-        return max(self.qreg1.depth, self.qreg2.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.qreg1, self.qreg2]
 
 
 class CRy(Gate):
@@ -292,8 +378,8 @@ class CRy(Gate):
         return self.qreg1.cost + self.qreg2.cost + self.p.cost + self.q.cost + 2
 
     @property
-    def depth(self) -> int:
-        return max(self.qreg1.depth, self.qreg2.depth, self.p.depth, self.q.depth) + 1
+    def children(self) -> list[Aexp]:
+        return [self.qreg1, self.qreg2, self.p, self.q]
 
 
 class Cmd(ABC):
@@ -313,8 +399,25 @@ class Cmd(ABC):
 
     @property
     @abstractmethod
-    def depth(self) -> int:
+    def children(self) -> list[Cmd | Gate | Aexp]:
         pass
+
+    @property
+    def depth(self) -> int:
+        children = self.children
+        return 1 + (
+            max([child.depth for child in children]) if len(children) > 0 else 0
+        )
+
+    @property
+    def filled(self) -> bool:
+        for child in self.children:
+            if not child.filled:
+                return False
+        return True
+
+    def copy(self) -> Cmd:
+        return self.__class__(*[child.copy() for child in self.children])
 
 
 class HoleCmd(Cmd):
@@ -329,8 +432,12 @@ class HoleCmd(Cmd):
         return 5
 
     @property
-    def depth(self) -> int:
-        return 1
+    def children(self) -> list[Cmd | Gate | Aexp]:
+        return []
+
+    @property
+    def filled(self) -> bool:
+        return False
 
 
 class SeqCmd(Cmd):
@@ -345,15 +452,15 @@ class SeqCmd(Cmd):
         return f"{self.pre}\n{self.post}"
 
     def __repr__(self) -> str:
-        return f"SeqCmd({self.pre:!r}, {self.post:!r})"
+        return f"SeqCmd({repr(self.pre)}, {repr(self.post)})"
 
     @property
     def cost(self) -> int:
         return self.pre.cost + self.post.cost + 5
 
     @property
-    def depth(self) -> int:
-        return max(self.pre.depth, self.post.depth) + 1
+    def children(self) -> list[Cmd | Gate | Aexp]:
+        return [self.pre, self.post]
 
 
 class ForCmd(Cmd):
@@ -380,13 +487,16 @@ class ForCmd(Cmd):
     def __repr__(self) -> str:
         return f"For({self.var!r}, {self.start!r}, {self.end!r}, {self.body!r})"
 
+    def copy(self) -> ForCmd:
+        return ForCmd(self.var, self.start.copy(), self.end.copy(), self.body.copy())
+
     @property
     def cost(self) -> int:
         return self.start.cost + self.end.cost + self.body.cost + 3
 
     @property
-    def depth(self) -> int:
-        return self.body.depth + 1
+    def children(self) -> list[Cmd | Gate | Aexp]:
+        return [self.start, self.end, self.body]
 
 
 class GateCmd(Cmd):
@@ -406,21 +516,23 @@ class GateCmd(Cmd):
         return self.gate.cost
 
     @property
-    def depth(self) -> int:
-        return self.gate.depth
+    def children(self) -> list[Cmd | Gate | Aexp]:
+        return [self.gate]
 
 
 class Pgm:
+    n: str
     body: Cmd
 
-    def __init__(self, body: Cmd | None = None) -> None:
+    def __init__(self, n: str, body: Cmd | None = None) -> None:
+        self.n = n
         self.body = body or HoleCmd()
 
     def __str__(self) -> str:
         return str(self.body)
 
     def __repr__(self) -> str:
-        return f"Pgm({self.body:!r})"
+        return f"Pgm({repr(self.body)})"
 
     def __lt__(self, other: Pgm) -> bool:
         return self.cost < other.cost
@@ -434,8 +546,14 @@ class Pgm:
         return self.body.depth
 
 
-GATE_MAP: dict[str, type[Gate]] = {
-    g.__name__: g
+ALL_AEXPS: list[type[Aexp]] = [
+    a
+    for a in globals().values()
+    if isinstance(a, type) and issubclass(a, Aexp) and a != Aexp
+]
+ALL_GATES: list[type[Gate]] = [
+    g
     for g in globals().values()
-    if isinstance(g, type) and issubclass(g, Gate)
-}
+    if isinstance(g, type) and issubclass(g, Gate) and g != Gate
+]
+GATE_MAP: dict[str, type[Gate]] = {g.__name__: g for g in ALL_GATES}
