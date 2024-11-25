@@ -62,6 +62,9 @@ class Integer(Aexp):
     def children(self) -> list[Aexp]:
         return []
 
+    def copy(self) -> Integer:
+        return Integer(self.value)
+
 
 class Var(Aexp):
     def __init__(self, name: str) -> None:
@@ -80,6 +83,9 @@ class Var(Aexp):
     @property
     def children(self) -> list[Aexp]:
         return []
+
+    def copy(self) -> Var:
+        return Var(self.name)
 
 
 class HoleAexp(Aexp):
@@ -144,7 +150,7 @@ class Sub(Aexp):
         return self.a.cost + self.b.cost + 3
 
     @property
-    def chilren(self) -> list[Aexp]:
+    def children(self) -> list[Aexp]:
         return [self.a, self.b]
 
 
@@ -446,7 +452,7 @@ class SeqCmd(Cmd):
         return f"{self.pre}\n{self.post}"
 
     def __repr__(self) -> str:
-        return f"SeqCmd({self.pre:!r}, {self.post:!r})"
+        return f"SeqCmd({repr(self.pre)}, {repr(self.post)})"
 
     @property
     def cost(self) -> int:
@@ -526,7 +532,7 @@ class Pgm:
         return str(self.body)
 
     def __repr__(self) -> str:
-        return f"Pgm({self.body:!r})"
+        return f"Pgm({repr(self.body)})"
 
     def __lt__(self, other: Pgm) -> bool:
         return self.cost < other.cost

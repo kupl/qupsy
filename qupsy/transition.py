@@ -24,7 +24,7 @@ class TransitionVisitor:
     def visit_HoleAexp(self, aexp: HoleAexp) -> list[Aexp]:
         return (
             [a() for a in ALL_AEXPS if a not in (HoleAexp, Integer, Var)]
-            + [Integer(i) for i in range(3)]
+            + [Integer(i) for i in range(3)]  # 0,1,2
             + [Var(f"i{i}") for i in range(self.for_depth)]
             + [Var(self.n)]
         )
@@ -77,6 +77,7 @@ class TransitionVisitor:
                         *(a.copy() for a in post_args),
                     )
                 )
+            return ret
         return []
 
     def visit_HoleCmd(self, cmd: HoleCmd) -> list[Cmd]:
@@ -126,10 +127,10 @@ class TransitionVisitor:
             return ret
         if not cmd.body.filled:
             self.for_depth += 1
-            bodys = self.visit_Cmd(cmd.body)
+            bodies = self.visit_Cmd(cmd.body)
             self.for_depth -= 1
             ret: list[Cmd] = []
-            for body in bodys:
+            for body in bodies:
                 ret.append(
                     ForCmd(
                         var=cmd.var,
@@ -158,8 +159,8 @@ class TransitionVisitor:
 
     def visit(self, pgm: Pgm) -> list[Pgm]:
         self.n = pgm.n
-        bodys = self.visit_Cmd(pgm.body)
-        return [Pgm(pgm.n, body) for body in bodys]
+        bodies = self.visit_Cmd(pgm.body)
+        return [Pgm(pgm.n, body) for body in bodies]
 
 
 def next(pgm: Pgm) -> list[Pgm]:
