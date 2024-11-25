@@ -6,11 +6,6 @@ def test_pgm_create_with_empty_body():
     assert isinstance(pgm.body, HoleCmd)
 
 
-def test_pgm_to_str():
-    pgm = Pgm("n")
-    assert str(pgm) == str(pgm.body)
-
-
 def test_pgm_cost():
     pgm = Pgm("n")
     assert pgm.cost == pgm.body.cost

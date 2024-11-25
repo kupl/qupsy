@@ -95,3 +95,63 @@ def test_next_aexp():
             aexp_types.remove(type(pgm.body.gate.qreg2.a))
         assert isinstance(pgm.body.gate.qreg2.b, HoleAexp)
     assert len(aexp_types) == 3
+
+
+def test_ghz_next():
+    pgm0 = Pgm("n")
+    pgm1 = Pgm("n", SeqCmd())
+    pgm2 = Pgm("n", SeqCmd(GateCmd()))
+    pgm3 = Pgm("n", SeqCmd(GateCmd(H())))
+    pgm4 = Pgm("n", SeqCmd(GateCmd(H(Integer(0)))))
+    pgm5 = Pgm("n", SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0")))
+    pgm6 = Pgm("n", SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1))))
+    pgm7 = Pgm("n", SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1), Var("n"))))
+    pgm8 = Pgm(
+        "n",
+        SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1), Var("n"), GateCmd())),
+    )
+    pgm9 = Pgm(
+        "n",
+        SeqCmd(
+            GateCmd(H(Integer(0))),
+            ForCmd("i0", Integer(1), Var("n"), GateCmd(CX())),
+        ),
+    )
+    pgm10 = Pgm(
+        "n",
+        SeqCmd(
+            GateCmd(H(Integer(0))),
+            ForCmd("i0", Integer(1), Var("n"), GateCmd(CX(Integer(0)))),
+        ),
+    )
+    pgm11 = Pgm(
+        "n",
+        SeqCmd(
+            GateCmd(H(Integer(0))),
+            ForCmd("i0", Integer(1), Var("n"), GateCmd(CX(Integer(0), Var("i0")))),
+        ),
+    )
+    assert pgm1 in next(pgm0)
+    assert pgm2 in next(pgm1)
+    assert pgm3 in next(pgm2)
+    assert pgm4 in next(pgm3)
+    assert pgm5 in next(pgm4)
+    assert pgm6 in next(pgm5)
+    assert pgm7 in next(pgm6)
+    assert pgm8 in next(pgm7)
+    assert pgm9 in next(pgm8)
+    assert pgm10 in next(pgm9)
+    assert pgm11 in next(pgm10)
+    assert (
+        str(pgm11)
+        == """
+import cirq, numpy as np
+def pgm(n):
+    qbits = cirq.LineQubit.range(n)
+    qc = cirq.Circuit()
+    qc.append(cirq.H(qbits[0]))
+    for i0 in range(1,n):
+        qc.append(cirq.CX(qbits[0], qbits[i0]))
+    return qc
+    """.strip()
+    )
