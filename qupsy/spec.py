@@ -1,13 +1,22 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import TypedDict
 
 import numpy as np
 import numpy.typing as npt
 
 from qupsy.language import GATE_MAP, Gate
-from qupsy.utils import logger
+
+
+class Testcase(TypedDict):
+    input: str | None
+    output: str
+
+
+class SpecData(TypedDict):
+    gates: list[str] | None
+    testcases: dict[str, Testcase]
 
 
 @dataclass
@@ -36,24 +45,25 @@ class Spec:
 )"""
 
 
-def parse_spec(spec: Path | str) -> Spec:
-    if isinstance(spec, str):
-        spec = Path(spec)
-    data = json.loads(spec.read_text())
-    gates = cast(list[str], data.get("gates", ["H", "X", "Ry", "CX", "CRy"]))
+def make_spec(data: SpecData) -> Spec:
+    gates = data["gates"] or ["H", "X", "Ry", "CX", "CRy"]
     gates = [GATE_MAP[gate] for gate in gates]
-
     testcases: list[tuple[npt.ArrayLike, npt.ArrayLike]] = []
     for tc in data["testcases"].values():
         output = np.fromstring(tc["output"], dtype="complex", sep=",")
-        input = (
-            tc["input"]
-            if "input" in tc
-            else (np.concat([[1], np.zeros_like(output[1:])]))
-        )
+        input = tc["input"] or (np.concat([[1], np.zeros_like(output[1:])]))
         testcases.append((input, output))
-
-        logger.debug("Parsed output: %s", output)
-        logger.debug("Parsed input: %s", input)
-
+        # logger.debug("Parsed output: %s", output)
+        # logger.debug("Parsed input: %s", input)
     return Spec(gates, testcases)
+
+
+def parse_spec(spec: Path | str) -> Spec:
+    if isinstance(spec, str):
+        spec = Path(spec)
+    raw_data = json.loads(spec.read_text())
+    data: SpecData = {"gates": None, "testcases": {}}
+    data["gates"] = raw_data.get("gates", None)
+    for k, v in raw_data["testcases"].items():
+        data["testcases"][k] = {"input": v.get("input", None), "output": v["output"]}
+    return make_spec(data)
