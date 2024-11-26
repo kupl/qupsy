@@ -145,13 +145,9 @@ def test_ghz_next():
     assert (
         str(pgm11)
         == """
-import cirq, numpy as np
 def pgm(n):
-    qbits = cirq.LineQubit.range(n)
-    qc = cirq.Circuit()
-    qc.append(cirq.H(qbits[0]))
+    H(0)
     for i0 in range(1,n):
-        qc.append(cirq.CX(qbits[0], qbits[i0]))
-    return qc
+        CX(0, i0)
     """.strip()
     )
