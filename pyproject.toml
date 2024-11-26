@@ -23,7 +23,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
     "rich>=13",
-    "numpy>=2",
+    "cirq>=1"
 ]
 
 [project.optional-dependencies]
