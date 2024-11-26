@@ -4,6 +4,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from textwrap import indent
 
+import cirq
+import numpy as np
+from cirq import Circuit, Gate, LineQubit  # type: ignore
+
 TAB = "    "
 
 
@@ -45,6 +49,10 @@ class Aexp(ABC):
     def copy(self) -> Aexp:
         return self.__class__(*[child.copy() for child in self.children])
 
+    @abstractmethod
+    def __call__(self, memory: dict[str, int]) -> int:
+        pass
+
 
 @dataclass
 class Integer(Aexp):
@@ -67,6 +75,9 @@ class Integer(Aexp):
 
     def copy(self) -> Integer:
         return Integer(self.value)
+
+    def __call__(self, memory: dict[str, int]) -> int:
+        return self.value
 
 
 @dataclass
@@ -91,6 +102,9 @@ class Var(Aexp):
     def copy(self) -> Var:
         return Var(self.name)
 
+    def __call__(self, memory: dict[str, int]) -> int:
+        return memory[self.name]
+
 
 @dataclass
 class HoleAexp(Aexp):
@@ -112,6 +126,9 @@ class HoleAexp(Aexp):
     def terminated(self) -> bool:
         return False
 
+    def __call__(self, memory: dict[str, int]) -> int:
+        raise ValueError("HoleAexp cannot be called")
+
 
 @dataclass
 class Add(Aexp):
@@ -123,7 +140,7 @@ class Add(Aexp):
         self.b = b or HoleAexp()
 
     def __str__(self) -> str:
-        return f"{self.a} + {self.b}"
+        return f"({self.a} + {self.b})"
 
     def __repr__(self) -> str:
         return f"Add({repr(self.a)}, {repr(self.b)})"
@@ -136,6 +153,9 @@ class Add(Aexp):
     def children(self) -> list[Aexp]:
         return [self.a, self.b]
 
+    def __call__(self, memory: dict[str, int]) -> int:
+        return self.a(memory) + self.b(memory)
+
 
 @dataclass
 class Sub(Aexp):
@@ -147,7 +167,7 @@ class Sub(Aexp):
         self.b = b or HoleAexp()
 
     def __str__(self) -> str:
-        return f"{self.a} - {self.b}"
+        return f"({self.a} - {self.b})"
 
     def __repr__(self) -> str:
         return f"Sub({repr(self.a)}, {repr(self.b)})"
@@ -160,6 +180,9 @@ class Sub(Aexp):
     def children(self) -> list[Aexp]:
         return [self.a, self.b]
 
+    def __call__(self, memory: dict[str, int]) -> int:
+        return self.a(memory) - self.b(memory)
+
 
 @dataclass
 class Mul(Aexp):
@@ -171,7 +194,7 @@ class Mul(Aexp):
         self.b = b or HoleAexp()
 
     def __str__(self) -> str:
-        return f"{self.a} * {self.b}"
+        return f"({self.a} * {self.b})"
 
     def __repr__(self) -> str:
         return f"Mul({repr(self.a)}, {repr(self.b)})"
@@ -184,6 +207,9 @@ class Mul(Aexp):
     def children(self) -> list[Aexp]:
         return [self.a, self.b]
 
+    def __call__(self, memory: dict[str, int]) -> int:
+        return self.a(memory) * self.b(memory)
+
 
 @dataclass
 class Div(Aexp):
@@ -195,7 +221,7 @@ class Div(Aexp):
         self.b = b or HoleAexp()
 
     def __str__(self) -> str:
-        return f"{self.a} // {self.b}"
+        return f"({self.a} // {self.b})"
 
     def __repr__(self) -> str:
         return f"Div({repr(self.a)}, {repr(self.b)})"
@@ -207,6 +233,9 @@ class Div(Aexp):
     @property
     def children(self) -> list[Aexp]:
         return [self.a, self.b]
+
+    def __call__(self, memory: dict[str, int]) -> int:
+        return self.a(memory) // self.b(memory)
 
 
 @dataclass
@@ -246,6 +275,10 @@ class Gate(ABC):
     def copy(self) -> Gate:
         return self.__class__(*[child.copy() for child in self.children])
 
+    @abstractmethod
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        pass
+
 
 @dataclass
 class HoleGate(Gate):
@@ -267,6 +300,9 @@ class HoleGate(Gate):
     def terminated(self) -> bool:
         return False
 
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        raise ValueError("HoleGate cannot be called")
+
 
 @dataclass
 class H(Gate):
@@ -276,7 +312,7 @@ class H(Gate):
         self.qreg = qreg or HoleAexp()
 
     def __str__(self) -> str:
-        return f"qc.append(cirq.H(qbits[{self.qreg}]))"
+        return f"H({self.qreg})"
 
     def __repr__(self) -> str:
         return f"H({repr(self.qreg)})"
@@ -289,6 +325,10 @@ class H(Gate):
     def children(self) -> list[Aexp]:
         return [self.qreg]
 
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        idx = self.qreg(memory)
+        return cirq.H(qbits[idx])  # type: ignore
+
 
 @dataclass
 class X(Gate):
@@ -298,7 +338,7 @@ class X(Gate):
         self.qreg = qreg or HoleAexp()
 
     def __str__(self) -> str:
-        return f"qc.append(cirq.X(qbits[{self.qreg}]))"
+        return f"X({self.qreg})"
 
     def __repr__(self) -> str:
         return f"X({repr(self.qreg)})"
@@ -311,12 +351,16 @@ class X(Gate):
     def children(self) -> list[Aexp]:
         return [self.qreg]
 
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        idx = self.qreg(memory)
+        return cirq.X(qbits[idx])  # type: ignore
+
 
 @dataclass
 class Ry(Gate):
     qreg: Aexp
-    p: Aexp
-    q: Aexp
+    p: Aexp  # TODO
+    q: Aexp  # TODO
 
     def __init__(
         self, qreg: Aexp | None = None, p: Aexp | None = None, q: Aexp | None = None
@@ -326,7 +370,7 @@ class Ry(Gate):
         self.q = q or HoleAexp()
 
     def __str__(self) -> str:
-        return f"qc.append(cirq.Ry(rads=2*np.arccos(math.sqrt({self.p}/{self.q}))))(qbits[{self.qreg}])"
+        return f"Ry({self.qreg}, {self.p}, {self.q})"
 
     def __repr__(self) -> str:
         return f"Ry({repr(self.qreg)}, {repr(self.p)}, {repr(self.q)})"
@@ -339,6 +383,10 @@ class Ry(Gate):
     def children(self) -> list[Aexp]:
         return [self.qreg, self.p, self.q]
 
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        idx = self.qreg(memory)
+        return cirq.Ry(rads=2 * np.arccos(np.sqrt(self.p(memory) / self.q(memory))))(qbits[idx])  # type: ignore
+
 
 @dataclass
 class CX(Gate):
@@ -350,7 +398,7 @@ class CX(Gate):
         self.qreg2 = qreg2 or HoleAexp()
 
     def __str__(self) -> str:
-        return f"qc.append(cirq.CX(qbits[{self.qreg1}], qbits[{self.qreg2}]))"
+        return f"CX({self.qreg1}, {self.qreg2})"
 
     def __repr__(self) -> str:
         return f"CX({repr(self.qreg1)}, {repr(self.qreg2)})"
@@ -362,6 +410,11 @@ class CX(Gate):
     @property
     def children(self) -> list[Aexp]:
         return [self.qreg1, self.qreg2]
+
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        idx1 = self.qreg1(memory)
+        idx2 = self.qreg2(memory)
+        return cirq.CX(qbits[idx1], qbits[idx2])  # type: ignore
 
 
 @dataclass
@@ -380,11 +433,11 @@ class CRy(Gate):
     ) -> None:
         self.qreg1 = qreg1 or HoleAexp()
         self.qreg2 = qreg2 or HoleAexp()
-        self.p = p or HoleAexp()
-        self.q = q or HoleAexp()
+        self.p = p or HoleAexp()  # TODO
+        self.q = q or HoleAexp()  # TODO
 
     def __str__(self) -> str:
-        return f"qc.append(cirq.Ry(rads=2*np.arccos(math.sqrt({self.p}/{self.q}))).controlled(num_controls=1)(qbits[{self.qreg1}], qbits[{self.qreg2}])"
+        return f"CRy({self.qreg1}, {self.qreg2}, {self.p}, {self.q})"
 
     def __repr__(self) -> str:
         return f"CRy({repr(self.qreg1)}, {repr(self.qreg2)}, {repr(self.p)}, {repr(self.q)})"
@@ -396,6 +449,11 @@ class CRy(Gate):
     @property
     def children(self) -> list[Aexp]:
         return [self.qreg1, self.qreg2, self.p, self.q]
+
+    def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
+        idx1 = self.qreg1(memory)
+        idx2 = self.qreg2(memory)
+        return cirq.Ry(rads=2 * np.arccos(np.sqrt(self.p(memory) / self.q(memory)))).controlled(num_controls=1)(qbits[idx1], qbits[idx2])  # type: ignore
 
 
 @dataclass
@@ -436,6 +494,12 @@ class Cmd(ABC):
     def copy(self) -> Cmd:
         return self.__class__(*[child.copy() for child in self.children])
 
+    @abstractmethod
+    def __call__(
+        self, qc: Circuit, qbits: list[LineQubit], memory: dict[str, int]
+    ) -> None:
+        pass
+
 
 @dataclass
 class HoleCmd(Cmd):
@@ -456,6 +520,11 @@ class HoleCmd(Cmd):
     @property
     def terminated(self) -> bool:
         return False
+
+    def __call__(
+        self, qc: Circuit, qbits: list[LineQubit], memory: dict[str, int]
+    ) -> None:
+        raise ValueError("HoleCmd cannot be called")
 
 
 @dataclass
@@ -480,6 +549,12 @@ class SeqCmd(Cmd):
     @property
     def children(self) -> list[Cmd | Gate | Aexp]:
         return [self.pre, self.post]
+
+    def __call__(
+        self, qc: Circuit, qbits: list[LineQubit], memory: dict[str, int]
+    ) -> None:
+        self.pre(qc, qbits, memory)
+        self.post(qc, qbits, memory)
 
 
 @dataclass
@@ -518,6 +593,16 @@ class ForCmd(Cmd):
     def children(self) -> list[Cmd | Gate | Aexp]:
         return [self.start, self.end, self.body]
 
+    def __call__(
+        self, qc: Circuit, qbits: list[LineQubit], memory: dict[str, int]
+    ) -> None:
+        start = self.start(memory)
+        end = self.end(memory)
+        for i in range(start, end):
+            memory[self.var] = i
+            self.body(qc, qbits, memory)
+        del memory[self.var]
+
 
 @dataclass
 class GateCmd(Cmd):
@@ -540,6 +625,12 @@ class GateCmd(Cmd):
     def children(self) -> list[Cmd | Gate | Aexp]:
         return [self.gate]
 
+    def __call__(
+        self, qc: Circuit, qbits: list[LineQubit], memory: dict[str, int]
+    ) -> None:
+        g = self.gate(qbits, memory)
+        qc.append(g)  # type: ignore
+
 
 @dataclass
 class Pgm:
@@ -551,10 +642,7 @@ class Pgm:
         self.body = body or HoleCmd()
 
     def __str__(self) -> str:
-        qreg = "qbits = cirq.LineQubit.range(n)"
-        circuit = "qc = cirq.Circuit()"
-        ret = "return qc"
-        return f"import cirq, numpy as np\ndef pgm({self.n}):\n{indent(qreg, TAB)}\n{indent(circuit, TAB)}\n{indent(str(self.body), TAB)}\n{indent(ret, TAB)}"
+        return f"def pgm({self.n}):\n{indent(str(self.body), TAB)}"
 
     def __repr__(self) -> str:
         return f"Pgm({repr(self.body)})"
@@ -569,6 +657,13 @@ class Pgm:
     @property
     def depth(self) -> int:
         return self.body.depth
+
+    def __call__(self, n: int) -> Circuit:
+        circuit = Circuit()
+        qbits = LineQubit.range(n)  # type: ignore
+        memory: dict[str, int] = {self.n: n}
+        self.body(circuit, qbits, memory)
+        return circuit
 
 
 ALL_AEXPS: list[type[Aexp]] = [
