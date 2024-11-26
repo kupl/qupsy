@@ -17,9 +17,11 @@ from qupsy.language import (
 
 
 class TransitionVisitor:
-    def __init__(self) -> None:
+
+    def __init__(self, components: list[type[Gate]]):
         self.n = ""
         self.for_depth = 0
+        self.components = components
 
     def visit_HoleAexp(self, aexp: HoleAexp) -> list[Aexp]:
         return (
@@ -54,7 +56,7 @@ class TransitionVisitor:
         return []
 
     def visit_HoleGate(self, gate: HoleGate) -> list[Gate]:
-        return [g() for g in ALL_GATES if g != HoleGate]
+        return [g() for g in self.components if g != HoleGate]
 
     def visit_Gate(self, gate: Gate) -> list[Gate]:
         visitor_name = f"visit_{gate.__class__.__name__}"
@@ -163,6 +165,7 @@ class TransitionVisitor:
         return [Pgm(pgm.n, body) for body in bodies]
 
 
-def next(pgm: Pgm) -> list[Pgm]:
-    visitor = TransitionVisitor()
+def next(pgm: Pgm, components: list[type[Gate]] | None = None) -> list[Pgm]:
+    components = components or ALL_GATES
+    visitor = TransitionVisitor(components)
     return visitor.visit(pgm)

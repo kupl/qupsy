@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 from typing import cast
 
+from qupsy.search import search
 from qupsy.spec import parse_spec
 from qupsy.utils import logger
 
@@ -29,4 +30,9 @@ def main() -> None:
     if args.dry_run:
         return
 
-    print("Hello, qupsy!")
+    logger.info("Searching for a solution")
+    try:
+        pgm = search(spec)
+        logger.info("Solution found: %s", pgm)
+    except ValueError:
+        logger.error("No solution found")

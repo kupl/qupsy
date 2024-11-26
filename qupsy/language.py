@@ -235,7 +235,10 @@ class Div(Aexp):
         return [self.a, self.b]
 
     def __call__(self, memory: dict[str, int]) -> int:
-        return self.a(memory) // self.b(memory)
+        b = self.b(memory)
+        if b == 0:
+            raise ValueError("Division by zero")
+        return self.a(memory) // b
 
 
 @dataclass
@@ -327,6 +330,8 @@ class H(Gate):
 
     def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
         idx = self.qreg(memory)
+        if idx >= len(qbits) or idx < 0:
+            raise ValueError(f"Index out of range: {idx} >= {len(qbits)}")
         return cirq.H(qbits[idx])  # type: ignore
 
 
@@ -353,6 +358,8 @@ class X(Gate):
 
     def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
         idx = self.qreg(memory)
+        if idx >= len(qbits) or idx < 0:
+            raise ValueError(f"Index out of range: {idx} >= {len(qbits)}")
         return cirq.X(qbits[idx])  # type: ignore
 
 
@@ -385,6 +392,8 @@ class Ry(Gate):
 
     def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
         idx = self.qreg(memory)
+        if idx >= len(qbits) or idx < 0:
+            raise ValueError(f"Index out of range: {idx} >= {len(qbits)}")
         return cirq.Ry(rads=2 * np.arccos(np.sqrt(self.p(memory) / self.q(memory))))(qbits[idx])  # type: ignore
 
 
@@ -414,6 +423,12 @@ class CX(Gate):
     def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
         idx1 = self.qreg1(memory)
         idx2 = self.qreg2(memory)
+        if idx1 >= len(qbits) or idx1 < 0:
+            raise ValueError(f"Index out of range: {idx1} >= {len(qbits)}")
+        if idx2 >= len(qbits) or idx2 < 0:
+            raise ValueError(f"Index out of range: {idx2} >= {len(qbits)}")
+        if idx1 == idx2:
+            raise ValueError("Control and target qubits must be different")
         return cirq.CX(qbits[idx1], qbits[idx2])  # type: ignore
 
 
@@ -453,6 +468,12 @@ class CRy(Gate):
     def __call__(self, qbits: list[LineQubit], memory: dict[str, int]) -> Gate:
         idx1 = self.qreg1(memory)
         idx2 = self.qreg2(memory)
+        if idx1 >= len(qbits) or idx1 < 0:
+            raise ValueError(f"Index out of range: {idx1} >= {len(qbits)}")
+        if idx2 >= len(qbits) or idx2 < 0:
+            raise ValueError(f"Index out of range: {idx2} >= {len(qbits)}")
+        if idx1 == idx2:
+            raise ValueError("Control and target qubits must be different")
         return cirq.Ry(rads=2 * np.arccos(np.sqrt(self.p(memory) / self.q(memory)))).controlled(num_controls=1)(qbits[idx1], qbits[idx2])  # type: ignore
 
 
@@ -601,7 +622,8 @@ class ForCmd(Cmd):
         for i in range(start, end):
             memory[self.var] = i
             self.body(qc, qbits, memory)
-        del memory[self.var]
+        if self.var in memory:
+            del memory[self.var]
 
 
 @dataclass
@@ -657,6 +679,10 @@ class Pgm:
     @property
     def depth(self) -> int:
         return self.body.depth
+
+    @property
+    def terminated(self) -> bool:
+        return self.body.terminated
 
     def __call__(self, n: int) -> Circuit:
         circuit = Circuit()
