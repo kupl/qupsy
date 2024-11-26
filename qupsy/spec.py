@@ -54,7 +54,7 @@ def make_spec(data: SpecData) -> Spec:
     testcases: list[tuple[npt.ArrayLike, npt.ArrayLike]] = []
     for tc in data["testcases"].values():
         output = np.fromstring(tc["output"], dtype="complex", sep=",")
-        input = tc["input"] or (np.concat([[1], np.zeros_like(output[1:])]))
+        input = tc["input"] or (np.concatenate([[1], np.zeros_like(output[1:])]))
         testcases.append((input, output))
         # logger.debug("Parsed output: %s", output)
         # logger.debug("Parsed input: %s", input)
