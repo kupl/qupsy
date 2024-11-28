@@ -1,10 +1,10 @@
 import numpy as np
 
 from qupsy.language import CX, H
-from qupsy.spec import SpecData, make_spec
+from qupsy.spec import Spec, SpecData, make_spec, parse_spec
 
 
-def test_parse_spec_from_json_data():
+def test_parse_spec_from_raw_data():
     raw_spec: SpecData = {
         "gates": ["H", "CX"],
         "testcases": {
@@ -36,3 +36,10 @@ def test_parse_spec_from_json_data():
         for i in output:
             output_equal_to_one += np.abs(i) ** 2
         assert np.isclose(output_equal_to_one, 1)
+
+
+def test_parse_spec_from_json_data():
+    spec = parse_spec("tests/data/ghz.json")
+    assert spec.gates == [H, CX]
+    assert len(spec.testcases) == 3
+    assert isinstance(spec, Spec)
