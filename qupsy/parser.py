@@ -38,6 +38,22 @@ class COMMA(Token):
     pass
 
 
+class PLUS(Token):
+    pass
+
+
+class MINUS(Token):
+    pass
+
+
+class TIMES(Token):
+    pass
+
+
+class DIVIDE(Token):
+    pass
+
+
 class NEWLINE(Token):
     pass
 
@@ -182,6 +198,46 @@ class VarTree(AexpTree):
         return Var(self.var)
 
 
+class AddTree(AexpTree):
+    def __init__(self, left: AexpTree, right: AexpTree) -> None:
+        self.left = left.parsed
+        self.right = right.parsed
+
+    @property
+    def parsed(self) -> Aexp:
+        return self.left + self.right
+
+
+class SubTree(AexpTree):
+    def __init__(self, left: AexpTree, right: AexpTree) -> None:
+        self.left = left.parsed
+        self.right = right.parsed
+
+    @property
+    def parsed(self) -> Aexp:
+        return self.left - self.right
+
+
+class MulTree(AexpTree):
+    def __init__(self, left: AexpTree, right: AexpTree) -> None:
+        self.left = left.parsed
+        self.right = right.parsed
+
+    @property
+    def parsed(self) -> Aexp:
+        return self.left * self.right
+
+
+class DivTree(AexpTree):
+    def __init__(self, left: AexpTree, right: AexpTree) -> None:
+        self.left = left.parsed
+        self.right = right.parsed
+
+    @property
+    def parsed(self) -> Aexp:
+        return self.left // self.right
+
+
 class ListTree(Tree):
     def __init__(self, head: AexpTree, tail: ListTree | None = None) -> None:
         self.head = head.parsed
@@ -275,6 +331,11 @@ def build_lexer() -> Lexer[State]:
                     (r"\(", LPAREN),
                     (r"\)", RPAREN),
                     (r":", COLON),
+                    # Operators
+                    (r"\+", PLUS),
+                    (r"-", MINUS),
+                    (r"\*", TIMES),
+                    (r"//", DIVIDE),
                     # Identifiers
                     (r"[a-zA-Z][a-zA-Z0-9]*", ID),
                     # Literals
@@ -356,6 +417,10 @@ def build_parser() -> Parser[Tree]:
                     ([HOLE], HoleAexpTree, []),
                     ([DIGIT], IntegerTree, [0]),
                     ([ID], VarTree, [0]),
+                    (["aexp", PLUS, "aexp"], AddTree, [0, 2]),
+                    (["aexp", MINUS, "aexp"], SubTree, [0, 2]),
+                    (["aexp", TIMES, "aexp"], MulTree, [0, 2]),
+                    (["aexp", DIVIDE, "aexp"], DivTree, [0, 2]),
                 ],
             }
         )
