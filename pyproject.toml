@@ -23,7 +23,8 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
     "rich>=13",
-    "cirq>=1"
+    "cirq>=1",
+    "plare"
 ]
 
 [project.optional-dependencies]
