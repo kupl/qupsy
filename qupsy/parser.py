@@ -417,10 +417,10 @@ def build_parser() -> Parser[Tree]:
                     ([HOLE], HoleAexpTree, []),
                     ([DIGIT], IntegerTree, [0]),
                     ([ID], VarTree, [0]),
-                    (["aexp", PLUS, "aexp"], AddTree, [0, 2]),
-                    (["aexp", MINUS, "aexp"], SubTree, [0, 2]),
-                    (["aexp", TIMES, "aexp"], MulTree, [0, 2]),
-                    (["aexp", DIVIDE, "aexp"], DivTree, [0, 2]),
+                    ([LPAREN, "aexp", PLUS, "aexp", RPAREN], AddTree, [1, 3]),
+                    ([LPAREN, "aexp", MINUS, "aexp", RPAREN], SubTree, [1, 3]),
+                    ([LPAREN, "aexp", TIMES, "aexp", RPAREN], MulTree, [1, 3]),
+                    ([LPAREN, "aexp", DIVIDE, "aexp", RPAREN], DivTree, [1, 3]),
                 ],
             }
         )
