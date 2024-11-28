@@ -14,6 +14,18 @@ TAB = "    "
 @dataclass
 class Aexp(ABC):
 
+    def __add__(self, other: Aexp) -> Aexp:
+        return Add(self, other)
+
+    def __sub__(self, other: Aexp) -> Aexp:
+        return Sub(self, other)
+
+    def __mul__(self, other: Aexp) -> Aexp:
+        return Mul(self, other)
+
+    def __floordiv__(self, other: Aexp) -> Aexp:
+        return Div(self, other)
+
     @abstractmethod
     def __str__(self) -> str:
         pass
