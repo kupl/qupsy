@@ -28,3 +28,13 @@ def test_add_same_cost():
     pgm2 = Pgm("n", SeqCmd(GateCmd(X(HoleAexp())), GateCmd(X(HoleAexp()))))
     worklist.put(pgm1, pgm2)
     assert worklist.get() == pgm1
+
+
+def test_show():
+    worklist = Worklist()
+    pgm1 = Pgm("n", SeqCmd(GateCmd(H(HoleAexp())), GateCmd(H(HoleAexp()))))
+    pgm2 = Pgm("n", SeqCmd(GateCmd(X(HoleAexp())), GateCmd(X(HoleAexp()))))
+    worklist.put(pgm1, pgm2)
+    worklist.show_set()
+    worklist.show_pq()
+    assert True
