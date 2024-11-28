@@ -6,7 +6,20 @@ from plare.lexer import Lexer
 from plare.parser import Parser
 from plare.token import Token
 
-from qupsy.language import Cmd, HoleCmd, Pgm, SeqCmd
+from qupsy.language import (
+    GATE_MAP,
+    Aexp,
+    Cmd,
+    ForCmd,
+    Gate,
+    GateCmd,
+    HoleAexp,
+    HoleCmd,
+    Integer,
+    Pgm,
+    SeqCmd,
+    Var,
+)
 
 
 class LPAREN(Token):
@@ -18,6 +31,10 @@ class RPAREN(Token):
 
 
 class COLON(Token):
+    pass
+
+
+class COMMA(Token):
     pass
 
 
@@ -41,10 +58,28 @@ class HOLE(Token):
     pass
 
 
+class FOR(Token):
+    pass
+
+
+class IN(Token):
+    pass
+
+
+class RANGE(Token):
+    pass
+
+
 class ID(Token):
     def __init__(self, value: str, *, lineno: int, offset: int) -> None:
         super().__init__(value, lineno=lineno, offset=offset)
         self.value = value
+
+
+class DIGIT(Token):
+    def __init__(self, value: str, *, lineno: int, offset: int) -> None:
+        super().__init__(value, lineno=lineno, offset=offset)
+        self.value = int(value)
 
 
 class Tree:
@@ -63,11 +98,31 @@ class PgmTree(Tree):
 
 
 class CmdTree(Tree, ABC):
-
     @property
     @abstractmethod
     def parsed(self) -> Cmd:
         pass
+
+
+class GateCmdTree(CmdTree):
+    def __init__(self, gate: GateTree) -> None:
+        self.gate = gate.parsed
+
+    @property
+    def parsed(self) -> Cmd:
+        return GateCmd(self.gate)
+
+
+class ForCmdTree(CmdTree):
+    def __init__(self, var: ID, start: AexpTree, end: AexpTree, body: CmdTree):
+        self.var = var.value
+        self.start = start.parsed
+        self.end = end.parsed
+        self.body = body.parsed
+
+    @property
+    def parsed(self) -> Cmd:
+        return ForCmd(self.var, self.start, self.end, self.body)
 
 
 class HoleCmdTree(CmdTree):
@@ -84,6 +139,57 @@ class SeqCmdTree(CmdTree):
     @property
     def parsed(self) -> Cmd:
         return SeqCmd(self.pre, self.post)
+
+
+class GateTree(Tree):
+    def __init__(self, gate: ID, args: ListTree) -> None:
+        self.gate = GATE_MAP[gate.value]
+        self.args = args.parsed
+
+    @property
+    def parsed(self) -> Gate:
+        return self.gate(*self.args)
+
+
+class AexpTree(Tree, ABC):
+    @property
+    @abstractmethod
+    def parsed(self) -> Aexp:
+        pass
+
+
+class HoleAexpTree(AexpTree):
+    @property
+    def parsed(self) -> Aexp:
+        return HoleAexp()
+
+
+class IntegerTree(AexpTree):
+    def __init__(self, value: DIGIT) -> None:
+        self.value = value.value
+
+    @property
+    def parsed(self) -> Aexp:
+        return Integer(self.value)
+
+
+class VarTree(AexpTree):
+    def __init__(self, var: ID) -> None:
+        self.var = var.value
+
+    @property
+    def parsed(self) -> Aexp:
+        return Var(self.var)
+
+
+class ListTree(Tree):
+    def __init__(self, head: AexpTree, tail: ListTree | None = None) -> None:
+        self.head = head.parsed
+        self.tail = tail.parsed if tail is not None else []
+
+    @property
+    def parsed(self) -> list[Aexp]:
+        return [self.head] + self.tail
 
 
 class State:
@@ -159,12 +265,20 @@ def build_lexer() -> Lexer[State]:
                     (r"[ \t\n]*\Z", remaining_dedents),
                     (r"[ \t\n]*\n", "end_of_line"),
                     (r"[ \t]+", "line"),
-                    #
+                    # Keywords
                     (r"def", DEF),
+                    (r"for", FOR),
+                    (r"in", IN),
+                    (r"range", RANGE),
+                    # Punctuation
+                    (r",", COMMA),
                     (r"\(", LPAREN),
                     (r"\)", RPAREN),
                     (r":", COLON),
-                    (r"[a-zA-Z][a-zA-Z0-9_]*", ID),
+                    # Identifiers
+                    (r"[a-zA-Z][a-zA-Z0-9]*", ID),
+                    # Literals
+                    (r"0|([1-9][0-9]*)", DIGIT),
                     (r"_", HOLE),
                 ],
                 "end_of_line": [
@@ -209,7 +323,39 @@ def build_parser() -> Parser[Tree]:
                 ],
                 "cmd": [
                     ([HOLE, NEWLINE], HoleCmdTree, []),
-                    # TODO: ForCmdTree, GateCmdTree
+                    (
+                        [
+                            FOR,
+                            ID,
+                            IN,
+                            RANGE,
+                            LPAREN,
+                            "aexp",
+                            COMMA,
+                            "aexp",
+                            RPAREN,
+                            COLON,
+                            NEWLINE,
+                            INDENT,
+                            "cmd_seq",
+                            DEDENT,
+                        ],
+                        ForCmdTree,
+                        [1, 5, 7, 12],
+                    ),
+                    (["gate", NEWLINE], GateCmdTree, [0]),
+                ],
+                "gate": [
+                    ([ID, LPAREN, "aexp_list", RPAREN], GateTree, [0, 2]),
+                ],
+                "aexp_list": [
+                    (["aexp", COMMA, "aexp_list"], ListTree, [0, 2]),
+                    (["aexp"], ListTree, [0]),
+                ],
+                "aexp": [
+                    ([HOLE], HoleAexpTree, []),
+                    ([DIGIT], IntegerTree, [0]),
+                    ([ID], VarTree, [0]),
                 ],
             }
         )

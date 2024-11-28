@@ -63,7 +63,7 @@ class Integer(Aexp):
         return str(self.value)
 
     def __repr__(self) -> str:
-        return f"{self.value}"
+        return f"Integer({self.value})"
 
     @property
     def cost(self) -> int:
@@ -89,7 +89,7 @@ class Var(Aexp):
         return self.name
 
     def __repr__(self) -> str:
-        return f"{self.name}"
+        return f"Var({self.name})"
 
     @property
     def cost(self) -> int:
