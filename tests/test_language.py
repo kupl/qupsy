@@ -1,4 +1,4 @@
-from qupsy.language import HoleCmd, Pgm, SeqCmd
+from qupsy.language import GateCmd, HoleCmd, Integer, Pgm, Ry, SeqCmd
 
 
 def test_pgm_create_with_empty_body():
@@ -6,9 +6,14 @@ def test_pgm_create_with_empty_body():
     assert isinstance(pgm.body, HoleCmd)
 
 
-def test_pgm_cost():
+def test_pgm_cost0():
     pgm = Pgm("n")
     assert pgm.cost == pgm.body.cost
+
+
+def test_pgm_cost1():
+    pgm = Pgm("n", GateCmd(Ry(Integer(0), Integer(1), Integer(3))))
+    assert pgm.cost == 2
 
 
 def test_pgm_depth():
