@@ -1,10 +1,6 @@
-from pathlib import Path
-
 from qupsy.language import CX, ForCmd, GateCmd, H, Integer, Pgm, SeqCmd, Var
 from qupsy.search import search
 from qupsy.spec import make_spec, SpecData
-
-DATA_DIR = Path(__file__).parent / "data"
 
 
 def test_search_ghz_last_step():
