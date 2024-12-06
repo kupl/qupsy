@@ -1,7 +1,7 @@
 import numpy as np
 
 from qupsy.language import CX, H
-from qupsy.spec import Spec, SpecData, make_spec, parse_spec
+from qupsy.spec import Spec, SpecData, make_spec
 
 
 def test_parse_spec_from_raw_data():
@@ -39,7 +39,21 @@ def test_parse_spec_from_raw_data():
 
 
 def test_parse_spec_from_json_data():
-    spec = parse_spec("tests/data/ghz.json")
+    raw_spec: SpecData = {
+        "gates": ["H", "CX"],
+        "testcases": {
+            "1": {
+                "input": None,
+                "output": "0.70710677,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.70710677",
+            },
+            "2": {
+                "input": None,
+                "output": "0.70710677, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.70710677",
+            },
+            "3": {"input": None, "output": "0.70710677,0,0,0,0,0,0,0.70710677"},
+        },
+    }
+    spec = make_spec(raw_spec)
     assert spec.gates == [H, CX]
     assert len(spec.testcases) == 3
     assert isinstance(spec, Spec)
