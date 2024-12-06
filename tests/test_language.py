@@ -1,4 +1,4 @@
-from qupsy.language import GateCmd, HoleCmd, Integer, Mul, Pgm, Ry, SeqCmd
+from qupsy.language import Div, GateCmd, HoleCmd, Integer, Mul, Pgm, Ry, SeqCmd
 
 
 def test_pgm_create_with_empty_body():
@@ -31,3 +31,9 @@ def test_pgm_call():
     pgm = Mul(Integer(2), Integer(3))
     res = pgm.__call__({"n": 5})
     assert res == 6
+
+
+def test_pgm_children():
+    pgm = Div(Integer(2), Integer(3))
+    children = pgm.children
+    assert children == [Integer(2), Integer(3)]
