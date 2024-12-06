@@ -74,3 +74,19 @@ def test_search_ghz_three_step():
 
     synthesized_pgm = search(spec, initial_pgm=init_pgm)
     assert synthesized_pgm == final_pgm
+
+
+def test_search_ghz_four_step():
+    init_pgm = Pgm(
+        "n", SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1), Var("n")))
+    )
+    final_pgm = Pgm(
+        "n",
+        SeqCmd(
+            GateCmd(H(Integer(0))),
+            ForCmd("i0", Integer(1), Var("n"), GateCmd(CX(Integer(0), Var("i0")))),
+        ),
+    )
+
+    synthesized_pgm = search(spec, initial_pgm=init_pgm)
+    assert synthesized_pgm == final_pgm
