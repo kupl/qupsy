@@ -1,3 +1,5 @@
+import time
+
 from qupsy.language import CX, ForCmd, GateCmd, H, Integer, Pgm, SeqCmd, Var
 from qupsy.search import search
 from qupsy.spec import SpecData, make_spec
@@ -102,5 +104,8 @@ def test_search_ghz_five_step():
         ),
     )
 
+    start = time.time()
     synthesized_pgm = search(spec, initial_pgm=init_pgm)
+    end = time.time()
     assert synthesized_pgm == final_pgm
+    assert end - start < 1
