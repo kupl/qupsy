@@ -1,4 +1,4 @@
-from qupsy.language import GateCmd, HoleCmd, Integer, Pgm, Ry, SeqCmd
+from qupsy.language import GateCmd, HoleCmd, Integer, Mul, Pgm, Ry, SeqCmd
 
 
 def test_pgm_create_with_empty_body():
@@ -25,3 +25,9 @@ def test_seq_cmd_wo_pre_and_post():
     seq = SeqCmd()
     assert isinstance(seq.pre, HoleCmd)
     assert isinstance(seq.post, HoleCmd)
+
+
+def test_pgm_call():
+    pgm = Mul(Integer(2), Integer(3))
+    res = pgm.__call__({"n": 5})
+    assert res == 6
