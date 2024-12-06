@@ -18,10 +18,10 @@ raw_spec: SpecData = {
         "3": {"input": None, "output": "0.70710677,0,0,0,0,0,0,0.70710677"},
     },
 }
-spec = make_spec(raw_spec)
 
 
 def test_search_ghz_one_step():
+    spec = make_spec(raw_spec)
     init_pgm = Pgm(
         "n",
         SeqCmd(
@@ -42,6 +42,7 @@ def test_search_ghz_one_step():
 
 
 def test_search_ghz_two_step():
+    spec = make_spec(raw_spec)
     init_pgm = Pgm(
         "n",
         SeqCmd(
@@ -62,6 +63,7 @@ def test_search_ghz_two_step():
 
 
 def test_search_ghz_three_step():
+    spec = make_spec(raw_spec)
     init_pgm = Pgm(
         "n",
         SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1), Var("n"), GateCmd())),
@@ -79,6 +81,7 @@ def test_search_ghz_three_step():
 
 
 def test_search_ghz_four_step():
+    spec = make_spec(raw_spec)
     init_pgm = Pgm(
         "n", SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1), Var("n")))
     )
@@ -95,6 +98,7 @@ def test_search_ghz_four_step():
 
 
 def test_search_ghz_five_step():
+    spec = make_spec(raw_spec)
     init_pgm = Pgm("n", SeqCmd(GateCmd(H(Integer(0))), ForCmd("i0", Integer(1))))
     final_pgm = Pgm(
         "n",
