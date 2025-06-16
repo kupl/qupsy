@@ -44,7 +44,7 @@ jobs:
 
       - name: Post test results
         if: ${{ github.event_name == 'pull_request' }}
-        uses: sambyeol/publish-pytest-action@v3
+        uses: sambyeol/publish-pytest-action@v4
         with:
           title: Test Results (Python ${{ matrix.python-version }})
           junit-xml: .pytest/test-results.xml
