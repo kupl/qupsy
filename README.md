@@ -6,6 +6,16 @@ Qupsy is a tool for **quantum program synthesis**: given a set of input/output q
 
 ## 🚀 Getting Started
 
+### Requirements
+
+Install the required packages with pip:
+
+```bash
+pip install numpy cirq
+```
+
+
+
 ### Running the Tool
 
 Use the following command to synthesize a quantum program:
