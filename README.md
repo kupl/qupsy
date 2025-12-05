@@ -81,9 +81,4 @@ Modules are under QPSynthesis/synthesizer/ path.
   Defines the transition relation—how current candidate programs evolve into next candidates.
 
 - **`prune.py`**  
-  Implements several **pruning strategies** to speed up synthesis and reduce search space:  
-
-  <div align="center">
-    <img src="image/speedup.png" alt="Speedup Performance" width="400"/>
-    <img src="image/space_reduction.png" alt="Space Reduction Performance" width="400"/>
-  </div>
+  Implements basic **pruning strategies** to speed up synthesis and reduce search space.
